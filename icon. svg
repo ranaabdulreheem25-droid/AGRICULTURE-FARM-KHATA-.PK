@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="100" fill="#17452d"/>
+  <circle cx="256" cy="256" r="190" fill="#286b42"/>
+  <path d="M256 390V180" stroke="#f3d77d"
+        stroke-width="20" stroke-linecap="round"/>
+  <path d="M256 285C155 285 126 218 130 145
+           C209 145 256 195 256 285Z" fill="#8fce73"/>
+  <path d="M256 235C256 145 314 105 388 110
+           C390 190 339 235 256 235Z" fill="#c5e99b"/>
+  <path d="M105 375Q256 325 407 375" fill="none"
+        stroke="#f3d77d" stroke-width="15" stroke-linecap="round"/>
+  <text x="256" y="450" text-anchor="middle"
+        font-size="52" font-family="Arial" font-weight="bold"
+        fill="#ffffff">MAK</text>
+</svg>

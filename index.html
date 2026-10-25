@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#17452d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Farm Khata">
+<meta name="description" content="Agriculture and Farm Khata">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<title>Agriculture & Farm Khata</title>
+
+<style>
+:root {
+  --green:#17452d;
+  --green2:#286b42;
+  --light:#edf5ed;
+  --gold:#f3d77d;
+  --red:#b42318;
+  --ink:#1c2b22;
+  --muted:#68776c;
+  --white:#fff;
+  --line:#dbe5dc;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  font-family:Arial,"Noto Nastaliq Urdu",sans-serif;
+  background:#f3f7f3;
+  color:var(--ink);
+}
+header {
+  background:linear-gradient(135deg,var(--green),var(--green2));
+  color:white;
+  padding:22px 16px 18px;
+  border-radius:0 0 24px 24px;
+}
+.brand { display:flex;align-items:center;gap:12px; }
+.logo {
+  width:58px;height:58px;border-radius:17px;
+  background:#fff2c7;color:var(--green);
+  display:grid;place-items:center;font-size:21px;font-weight:900;
+  flex-shrink:0;
+}
+header h1 {font-size:22px;margin:0 0 5px}
+header p {margin:3px 0;font-size:13px;color:#e1efdf}
+header .credit {margin-top:14px;color:var(--gold);font-size:12px}
+main {max-width:1100px;margin:auto;padding:14px}
+nav {
+  display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;
+  scrollbar-width:thin;
+}
+nav button {
+  white-space:nowrap;border:1px solid var(--line);
+  background:white;color:var(--green);padding:11px 14px;
+  border-radius:12px;font-weight:700;cursor:pointer;
+}
+nav button.active {background:var(--green);color:white}
+h2 {font-size:20px;margin:8px 0 14px}
+h3 {font-size:16px;margin:0 0 12px}
+.panel {
+  background:white;border:1px solid var(--line);
+  border-radius:16px;padding:16px;margin-bottom:14px;
+  box-shadow:0 3px 12px #163b1c0a;
+}
+.grid {
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));
+  gap:10px;margin-bottom:14px;
+}
+.stat {
+  background:white;border:1px solid var(--line);
+  border-radius:15px;padding:15px;
+}
+.stat small {color:var(--muted);display:block;margin-bottom:8px}
+.stat strong {font-size:21px;color:var(--green);overflow-wrap:anywhere}
+form .fields {
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;
+}
+label {font-size:13px;font-weight:700;display:block;margin-bottom:5px}
+input,select,textarea {
+  width:100%;min-width:0;border:1px solid #cbd8cc;border-radius:10px;
+  padding:11px;font:inherit;background:#fff;color:var(--ink);
+}
+input:focus,select:focus,textarea:focus {
+  outline:2px solid #8bc49a;border-color:var(--green2);
+}
+.actions {display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn {
+  border:0;border-radius:10px;padding:11px 15px;
+  cursor:pointer;font-weight:700;font-size:14px;
+}
+.primary {background:var(--green);color:white}
+.secondary {background:#e5f0e6;color:var(--green)}
+.danger {background:#fde8e7;color:var(--red)}
+.table-wrap {overflow-x:auto}
+table {width:100%;border-collapse:collapse;font-size:13px;min-width:580px}
+th,td {padding:10px 8px;border-bottom:1px solid var(--line);text-align:start}
+th {background:#edf5ed;color:var(--green)}
+td button {margin:2px;padding:7px 9px;font-size:12px}
+.empty {color:var(--muted);padding:16px 0}
+.note {font-size:12px;color:var(--muted);line-height:1.7}
+.hidden {display:none!important}
+footer {text-align:center;color:var(--muted);font-size:12px;padding:24px 10px}
+.badge {background:#e6f3e7;color:var(--green);padding:4px 7px;border-radius:7px}
+@media(max-width:500px) {
+  main {padding:10px}
+  header {padding:18px 13px}
+  header h1 {font-size:19px}
+  .panel {padding:12px}
+  .stat strong {font-size:18px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">MAK</div>
+    <div>
+      <h1>Agriculture & Farm Khata</h1>
+      <p>میرا کھیتی باڑی کا کھاتہ</p>
+      <p>Land • Crops • Expenses • Income</p>
+    </div>
+  </div>
+  <div class="credit">Developed by Rana Abdul Rehman</div>
+</header>
+
+<main>
+<nav id="nav"></nav>
+<div id="app"></div>
+</main>
+
+<footer>
+  Agriculture & Farm Khata · Developed by Rana Abdul Rehman
+  <br>اپنے کھاتوں کا باقاعدہ بیک اپ محفوظ کریں۔
+</footer>
+
+<input id="restoreFile" class="hidden" type="file" accept=".json,application/json">
+
+<script>
+"use strict";
+
+const KEY = "farmKhataData_v1";
+
+const CROPS = [
+  "گندم / Wheat","چاول / Rice","مکئی / Maize","گنا / Sugarcane",
+  "کپاس / Cotton","مٹر / Peas","آلو / Potato","پیاز / Onion",
+  "ٹماٹر / Tomato","مرچ / Chilli","چارہ / Fodder","سرسوں / Mustard",
+  "تل / Sesame","چنا / Chickpea","دال / Lentils","جو / Barley",
+  "باجرہ / Millet","جوار / Sorghum","سبزیاں / Vegetables",
+  "پھل / Fruits","دیگر / Other"
+];
+
+const EXPENSES = [
+  "بیج / Seed","پنیری / Nursery","کھاد DAP","یوریا / Urea",
+  "دیگر کھاد / Other fertilizer","زرعی دوا / Spray",
+  "گندھک / Sulfur","پانی / Water","ٹیوب ویل بل / Motor bill",
+  "ٹریکٹر ڈیزل / Tractor diesel","پیٹر ڈیزل / Petrol or diesel",
+  "ہل چلانا / Ploughing","بوائی / Sowing","لیزر لیولنگ / Laser leveling",
+  "مزدوری / Labour","فصل کٹائی / Harvesting","تھریشر / Thresher",
+  "پرالی بنانا / Straw work","پرالی لوڈنگ / Straw loading",
+  "ٹرانسپورٹ / Transport","آڑھت کمیشن / Commission",
+  "ٹریکٹر مرمت / Tractor repair","قرض ادائیگی / Loan payment",
+  "زمین ٹھیکہ / Land rent","دیگر خرچہ / Other"
+];
+
+const SCHEMAS = {
+  lands: {
+    title:"زمینیں / پیلیاں",
+    singular:"زمین",
+    fields:[
+      ["name","پیلی کا نام / Land name","text",true],
+      ["area","رقبہ ایکڑ / Acres","number",true],
+      ["ownership","ملکیت / Own or lease","select",true,["اپنی / Own","ٹھیکہ / Lease"]],
+      ["rent","ٹھیکہ رقم / Lease amount","number",false],
+      ["year","سال / Year","number",false],
+      ["notes","تفصیل / Notes","text",false]
+    ]
+  },
+  expenses: {
+    title:"فصل و زمین کے اخراجات / Expenses",
+    singular:"خرچہ",
+    fields:[
+      ["date","تاریخ / Date","date",true],
+      ["landId","پیلی / Land","land",true],
+      ["crop","فصل / Crop","crop",true],
+      ["category","خرچے کی قسم / Expense type","select",true,EXPENSES],
+      ["item","آئٹم یا کام / Item or work","text",false],
+      ["qty","مقدار / Quantity","number",false],
+      ["unit","اکائی / Unit","select",false,["کلو / kg","بوری / bag","ایکڑ / acre","گھنٹہ / hour","دن / day","لیٹر / litre","عدد / item"]],
+      ["amount","رقم روپے / Amount Rs","number",true],
+      ["notes","تفصیل / Notes","text",false]
+    ]
+  },
+  sales: {
+    title:"فصل فروخت و آڑھتی / Crop Sales",
+    singular:"فروخت",
+    fields:[
+      ["date","تاریخ / Date","date",true],
+      ["landId","پیلی / Land","land",true],
+      ["crop","فصل / Crop","crop",true],
+      ["buyer","آڑھتی یا خریدار / Buyer","text",true],
+      ["quantity","مقدار کلو / Quantity kg","number",true],
+      ["rate","فی کلو قیمت / Rate per kg","number",true],
+      ["deductions","کمیشن و کٹوتی / Deductions","number",false],
+      ["received","وصول رقم / Amount received","number",false],
+      ["notes","تفصیل / Notes","text",false]
+    ]
+  },
+  employees: {
+    title:"ملازمین / Employees",
+    singular:"ملازم",
+    fields:[
+      ["name","نام / Name","text",true],
+      ["job","کام / Work","text",true],
+      ["salary","ماہانہ تنخواہ / Monthly salary","number",true],
+      ["phone","فون / Phone","tel",false],
+      ["notes","تفصیل / Notes","text",false]
+    ]
+  },
+  payments: {
+    title:"ملازمین کی ادائیگی / Salary Payments",
+    singular:"ادائیگی",
+    fields:[
+      ["date","تاریخ / Date","date",true],
+      ["employeeId","ملازم / Employee","employee",true],
+      ["amount","ادا رقم / Amount paid","number",true],
+      ["notes","تفصیل / Notes","text",false]
+    ]
+  },
+  milk: {
+    title:"دودھ کا کھاتہ / Milk Ledger",
+    singular:"دودھ اندراج",
+    fields:[
+      ["date","تاریخ / Date","date",true],
+      ["customer","گاہک کا نام / Customer","text",true],
+      ["quantity","دودھ کلو / Milk kg","number",true],
+      ["rate","فی کلو قیمت / Rate per kg","number",true],
+      ["received","وصول رقم / Amount received","number",false],
+      ["notes","تفصیل / Notes","text",false]
+    ]
+  }
+};
+
+let data = loadData();
+let current = "dashboard";
+let editing = {type:null,id:null};
+
+function blankData(){
+  return {lands:[],expenses:[],sales:[],employees:[],payments:[],milk:[]};
+}
+function loadData(){
+  try {
+    const parsed = JSON.parse(localStorage.getItem(KEY) || "null");
+    const empty = blankData();
+    if (parsed && typeof parsed === "object") {
+      for (const k of Object.keys(empty)) {
+        empty[k] = Array.isArray(parsed[k]) ? parsed[k] : [];
+      }
+      return empty;
+    }
+  } catch(e) {}
+  return blankData();
+}
+function persist(){
+  try {
+    localStorage.setItem(KEY, JSON.stringify(data));
+    return true;
+  } catch(e) {
+    alert("ڈیٹا محفوظ نہیں ہو سکا۔ فون/براؤزر کی اسٹوریج چیک کریں۔");
+    return false;
+  }
+}
+function uid(){
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+}
+function esc(value){
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[c]);
+}
+function num(value){ return Number(value) || 0; }
+function money(value){
+  return num(value).toLocaleString("en-PK",{maximumFractionDigits:2});
+}
+function today(){
+  const d = new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function landName(id){
+  return data.lands.find(x=>x.id===id)?.name || "حذف شدہ/نامعلوم زمین";
+}
+function employeeName(id){
+  return data.employees.find(x=>x.id===id)?.name || "نامعلوم ملازم";
+}
+function navItems(){
+  return [
+    ["dashboard","🏠 ڈیش بورڈ"],
+    ["lands","🌱 زمینیں"],
+    ["expenses","💸 اخراجات"],
+    ["sales","🌾 فصل فروخت"],
+    ["employees","👨‍🌾 ملازمین"],
+    ["payments","💵 تنخواہ"],
+    ["milk","🥛 دودھ"],
+    ["reports","📊 رپورٹ"],
+    ["backup","🗂️ بیک اپ"]
+  ];
+}
+function renderNav(){
+  document.getElementById("nav").innerHTML = navItems().map(([id,label]) =>
+    `<button class="${current===id?"active":""}" onclick="go('${id}')">${label}</button>`
+  ).join("");
+}
+function go(id){
+  current=id;
+  editing={type:null,id:null};
+  render();
+}
+function render(){
+  renderNav();
+  const app=document.getElementById("app");
+  if(current==="dashboard") app.innerHTML=dashboardHTML();
+  else if(current==="reports") app.innerHTML=reportsHTML();
+  else if(current==="backup") app.innerHTML=backupHTML();
+  else app.innerHTML=sectionHTML(current);
+}
+function dashboardHTML(){
+  const expenses=data.expenses.reduce((s,x)=>s+num(x.amount),0);
+  const sales=data.sales.reduce((s,x)=>s+Math.max(0,num(x.quantity)*num(x.rate)-num(x.deductions)),0);
+  const milkValue=data.milk.reduce((s,x)=>s+num(x.quantity)*num(x.rate),0);
+  const milkReceived=data.milk.reduce((s,x)=>s+num(x.received),0);
+  const salaryPaid=data.payments.reduce((s,x)=>s+num(x.amount),0);
+  return `
+  <h2>ڈیش بورڈ / Dashboard</h2>
+  <div class="grid">
+    <div class="stat"><small>کل زمینیں / Lands</small><strong>${data.lands.length}</strong></div>
+    <div class="stat"><small>کل رقبہ / Acres</small><strong>${money(data.lands.reduce((s,x)=>s+num(x.area),0))}</strong></div>
+    <div class="stat"><small>کل اخراجات / Expenses</small><strong>Rs ${money(expenses)}</strong></div>
+    <div class="stat"><small>فصل کی خالص فروخت / Crop net</small><strong>Rs ${money(sales)}</strong></div>
+    <div class="stat"><small>دودھ کی کل مالیت / Milk value</small><strong>Rs ${money(milkValue)}</strong></div>
+    <div class="stat"><small>دودھ کی بقایا رقم / Milk due</small><strong>Rs ${money(Math.max(0,milkValue-milkReceived))}</strong></div>
+    <div class="stat"><small>تنخواہ کی کل ادائیگی / Salaries paid</small><strong>Rs ${money(salaryPaid)}</strong></div>
+  </div>
+  <div class="panel">
+    <h3>فوری اندراج / Quick Entry</h3>
+    <div class="actions">
+      <button class="btn primary" onclick="go('lands')">+ زمین شامل کریں</button>
+      <button class="btn primary" onclick="go('expenses')">+ خرچہ درج کریں</button>
+      <button class="btn primary" onclick="go('sales')">+ فصل فروخت</button>
+      <button class="btn secondary" onclick="go('milk')">+ دودھ درج کریں</button>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>ضروری ہدایت / Important</h3>
+    <p class="note">ہر خرچے کے لیے درست پیلی منتخب کریں۔ ریکارڈ بدلنے کے لیے Edit اور مٹانے کے لیے Delete استعمال کریں۔ اپنے ڈیٹا کا بیک اپ باقاعدگی سے ڈاؤن لوڈ کریں۔</p>
+  </div>`;
+}
+function optionsFor(field){
+  if(field==="landId") return data.lands.map(x=>[x.id,x.name]);
+  if(field==="employeeId") return data.employees.map(x=>[x.id,x.name]);
+  if(field==="crop") return CROPS.map(x=>[x,x]);
+  return [];
+}
+function fieldHTML(type,field,record){
+  const [key,label,kind,required,opts]=field;
+  const val=record[key] ?? (kind==="date"?today():"");
+  const req=required?"required":"";
+  if(kind==="select"){
+    return `<div><label for="${key}">${label}</label><select id="${key}" name="${key}" ${req}>
+      <option value="">منتخب کریں / Select</option>
+      ${(opts||[]).map(o=>`<option value="${esc(o)}" ${String(val)===String(o)?"selected":""}>${esc(o)}</option>`).join("")}
+    </select></div>`;
+  }
+  if(kind==="land" || kind==="employee" || kind==="crop"){
+    const options=optionsFor(key);
+    const disabled=options.length===0;
+    return `<div><label for="${key}">${label}</label><select id="${key}" name="${key}" ${req} ${disabled?"disabled":""}>
+      <option value="">منتخب کریں / Select</option>
+      ${options.map(([v,t])=>`<option value="${esc(v)}" ${String(val)===String(v)?"selected":""}>${esc(t)}</option>`).join("")}
+    </select>${disabled?'<small class="note">پہلے متعلقہ ریکارڈ شامل کریں۔</small>':""}</div>`;
+  }
+  const typeAttr=["text","number","date","tel"].includes(kind)?kind:"text";
+  const step=kind==="number"?'step="any" min="0"':"";
+  return `<div><label for="${key}">${label}</label><input id="${key}" name="${key}" type="${typeAttr}" value="${esc(val)}" ${step} ${req}></div>`;
+}
+function sectionHTML(type){
+  const schema=SCHEMAS[type];
+  if(!schema) return "<p>صفحہ دستیاب نہیں۔</p>";
+  const list=data[type];
+  const record=editing.type===type ? list.find(x=>x.id===editing.id) || {} : {};
+  const formFields=schema.fields.map(f=>fieldHTML(type,f,record)).join("");
+  const rows=list.map(x=>rowHTML(type,x)).join("");
+  return `
+  <h2>${schema.title}</h2>
+  <div class="panel">
+    <h3>${editing.type===type?"ریکارڈ تبدیل کریں / Edit":"نیا اندراج / Add new"}</h3>
+    <form onsubmit="saveRecord(event,'${type}')">
+      <div class="fields">${formFields}</div>
+      <div class="actions">
+        <button class="btn primary" type="submit">${editing.type===type?"تبدیلی محفوظ کریں / Update":"محفوظ کریں / Save"}</button>
+        ${editing.type===type?'<button class="btn secondary" type="button" onclick="cancelEdit()">منسوخ / Cancel</button>':""}
+      </div>
+    </form>
+    ${type==="lands"?'<p class="note">ٹھیکہ والی زمین منتخب کرنے پر ٹھیکے کی رقم درج کریں۔ سال الگ محفوظ ہوتا ہے۔</p>':""}
+    ${type==="sales"?'<p class="note">خالص فروخت = مقدار × فی کلو قیمت − کٹوتی۔ وصول رقم الگ درج کریں تاکہ بقایا معلوم ہو سکے۔</p>':""}
+  </div>
+  <div class="panel">
+    <h3>محفوظ ریکارڈ / Saved records (${list.length})</h3>
+    ${list.length?`<div class="table-wrap"><table><thead><tr>${headers(type)}</tr></thead><tbody>${rows}</tbody></table></div>`:'<p class="empty">ابھی کوئی ریکارڈ موجود نہیں۔</p>'}
+  </div>`;
+}
+function headers(type){
+  const base=SCHEMAS[type].fields;
+  return base.map(f=>`<th>${f[1]}</th>`).join("")+"<th>عمل / Actions</th>";
+}
+function displayValue(type,key,val){
+  if(key==="landId") return landName(val);
+  if(key==="employeeId") return employeeName(val);
+  if(key==="ownership") return val;
+  if(["amount","rate","received","rent","salary","deductions"].includes(key)) return "Rs "+money(val);
+  if(["quantity","area","qty"].includes(key)) return money(val);
+  if(key==="crop" || key==="category" || key==="unit") return val||"—";
+  return val ?? "";
+}
+function rowHTML(type,x){
+  const cells=SCHEMAS[type].fields.map(f=>`<td>${esc(displayValue(type,f[0],x[f[0]]))}</td>`).join("");
+  return `<tr>${cells}<td>
+    <button class="btn secondary" onclick="editRecord('${type}','${x.id}')">Edit</button>
+    <button class="btn danger" onclick="deleteRecord('${type}','${x.id}')">Delete</button>
+  </td></tr>`;
+}
+function saveRecord(event,type){
+  event.preventDefault();
+  const form=event.target;
+  const record={};
+  for(const f of SCHEMAS[type].fields){
+    const key=f[0];
+    const el=form.elements.namedItem(key);
+    if(!el) continue;
+    let value=el.value.trim();
+    if(f[2]==="number") value=value===""?0:Number(value);
+    record[key]=value;
+  }
+  if(type==="lands" && record.ownership==="اپنی / Own") record.rent=0;
+  const existing=editing.type===type ? data[type].find(x=>x.id===editing.id) : null;
+  if(existing) Object.assign(existing,record);
+  else data[type].push({id:uid(),...record,createdAt:new Date().toISOString()});
+  if(persist()){
+    editing={type:null,id:null};
+    render();
+  }
+}
+function editRecord(type,id){
+  editing={type,id};
+  current=type;
+  render();
+  document.getElementById("app").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function cancelEdit(){
+  editing={type:null,id:null};
+  render();
+}
+function deleteRecord(type,id){
+  if(!confirm("کیا آپ واقعی یہ ریکارڈ حذف کرنا چاہتے ہیں؟ / Delete this record?")) return;
+  data[type]=data[type].filter(x=>x.id!==id);
+  persist();
+  render();
+}
+function reportsHTML(){
+  const expenseByLand={};
+  for(const e of data.expenses){
+    const key=e.landId||"unknown";
+    expenseByLand[key]=(expenseByLand[key]||0)+num(e.amount);
+  }
+  const rows=data.lands.map(l=>{
+    const ex=expenseByLand[l.id]||0;
+    const sales=data.sales.filter(s=>s.landId===l.id).reduce((n,s)=>n+Math.max(0,num(s.quantity)*num(s.rate)-num(s.deductions)),0);
+    return `<tr><td>${esc(l.name)}</td><td>${money(l.area)}</td><td>Rs ${money(ex)}</td><td>Rs ${money(sales)}</td><td>Rs ${money(sales-ex)}</td></tr>`;
+  }).join("");
+  const expenses=data.expenses.reduce((s,x)=>s+num(x.amount),0);
+  const netSales=data.sales.reduce((s,x)=>s+Math.max(0,num(x.quantity)*num(x.rate)-num(x.deductions)),0);
+  const totalSalesReceivable=data.sales.reduce((s,x)=>s+Math.max(0,num(x.quantity)*num(x.rate)-num(x.deductions)-num(x.received)),0);
+  const milkTotal=data.milk.reduce((s,x)=>s+num(x.quantity)*num(x.rate),0);
+  const milkReceived=data.milk.reduce((s,x)=>s+num(x.received),0);
+  const milkKg=data.milk.reduce((s,x)=>s+num(x.quantity),0);
+  const totalPaid=data.payments.reduce((s,x)=>s+num(x.amount),0);
+  return `<h2>مجموعی کھاتہ / Overall Report</h2>
+  <div class="grid">
+    <div class="stat"><small>کل اخراجات</small><strong>Rs ${money(expenses)}</strong></div>
+    <div class="stat"><small>فصل کی خالص فروخت</small><strong>Rs ${money(netSales)}</strong></div>
+    <div class="stat"><small>فصل فروخت بقایا</small><strong>Rs ${money(totalSalesReceivable)}</strong></div>
+    <div class="stat"><small>دودھ کی کل مقدار</small><strong>${money(milkKg)} kg</strong></div>
+    <div class="stat"><small>دودھ بقایا</small><strong>Rs ${money(Math.max(0,milkTotal-milkReceived))}</strong></div>
+    <div class="stat"><small>ملازمین کو ادا رقم</small><strong>Rs ${money(totalPaid)}</strong></div>
+    <div class="stat"><small>فصل فروخت منفی اخراجات</small><strong>Rs ${money(netSales-expenses)}</strong></div>
+  </div>
+  <div class="panel">
+    <h3>پیلی وار حساب / Land-wise Summary</h3>
+    ${rows?`<div class="table-wrap"><table><thead><tr><th>پیلی</th><th>ایکڑ</th><th>خرچہ</th><th>خالص فروخت</th><th>فروخت منفی خرچہ</th></tr></thead><tbody>${rows}</tbody></table></div>`:'<p class="empty">رپورٹ کے لیے پہلے زمینیں شامل کریں۔</p>'}
+    <p class="note">یہ خلاصہ فصل کی خالص فروخت منفی درج شدہ اخراجات دکھاتا ہے۔ اس میں قرض، ٹھیکے، تمام وصولیوں یا دوسری آمدن کو خودکار طور پر شامل نہیں کیا گیا۔</p>
+  </div>`;
+}
+function backupHTML(){
+  return `<h2>بیک اپ اور بحالی / Backup & Restore</h2>
+  <div class="panel">
+    <h3>ڈیٹا محفوظ کریں / Export</h3>
+    <p class="note">تمام موجودہ اندراجات JSON فائل میں ڈاؤن لوڈ کریں اور اسے محفوظ جگہ پر رکھیں۔</p>
+    <button class="btn primary" onclick="downloadBackup()">بیک اپ ڈاؤن لوڈ کریں / Download Backup</button>
+  </div>
+  <div class="panel">
+    <h3>بیک اپ واپس لائیں / Restore</h3>
+    <p class="note">صرف اپنی پہلے محفوظ کی ہوئی Farm Khata JSON فائل منتخب کریں۔ Restore کرنے سے موجودہ ڈیٹا بدل جائے گا۔</p>
+    <button class="btn secondary" onclick="document.getElementById('restoreFile').click()">JSON فائل منتخب کریں / Choose Backup</button>
+  </div>
+  <div class="panel">
+    <h3>ڈیٹا کے بارے میں / Data Storage</h3>
+    <p class="note">یہ ورژن اسی براؤزر یا انسٹال شدہ ایپ کی مقامی اسٹوریج میں ڈیٹا محفوظ کرتا ہے۔ یہ خودکار آن لائن اکاؤنٹ یا مختلف آلات کے درمیان Sync نہیں کرتا۔ براؤزر کا ڈیٹا حذف ہونے سے اندراجات ضائع ہو سکتے ہیں، اس لیے بیک اپ لازمی بنائیں۔</p>
+  </div>`;
+}
+function downloadBackup(){
+  const blob=new Blob([JSON.stringify({
+    app:"Agriculture & Farm Khata",
+    version:1,
+    exportedAt:new Date().toISOString(),
+    data:data
+  },null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="farm-khata-backup-"+today()+".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+document.getElementById("restoreFile").addEventListener("change",async event=>{
+  const file=event.target.files?.[0];
+  if(!file) return;
+  if(!confirm("Restore سے موجودہ ڈیٹا بدل جائے گا۔ کیا آپ جاری رکھنا چاہتے ہیں؟")) {
+    event.target.value="";
+    return;
+  }
+  try{
+    const parsed=JSON.parse(await file.text());
+    const source=parsed.data || parsed;
+    const fresh=blankData();
+    for(const key of Object.keys(fresh)){
+      if(!Array.isArray(source[key])) throw new Error("Invalid backup");
+      fresh[key]=source[key];
+    }
+    data=fresh;
+    if(persist()){
+      alert("بیک اپ بحال ہو گیا۔ / Backup restored.");
+      go("dashboard");
+    }
+  }catch(e){
+    alert("یہ بیک اپ فائل درست نہیں ہے۔ / Invalid backup file.");
+  }
+  event.target.value="";
+});
+
+render();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js")
+      .catch(error => console.error("Service worker failed:",error));
+  });
+}
+</script>
+</body>
+</html>

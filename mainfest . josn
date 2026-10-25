@@ -1,0 +1,21 @@
+{
+  "id": "./",
+  "name": "Agriculture & Farm Khata",
+  "short_name": "Farm Khata",
+  "description": "زرعی زمین، فصلوں اور کھیتوں کا حساب",
+  "lang": "ur",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#edf5ed",
+  "theme_color": "#17452d",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
